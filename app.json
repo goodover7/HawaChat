@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "name": "hawa-chat",
+    "slug": "hawa-chat",
+    "version": "1.0.0",
+    "scheme": "hawa-chat",
+    "web": {
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router"
+    ]
+  }
+}
