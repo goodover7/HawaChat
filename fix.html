@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>إصلاح هوا شات</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0d0d1a;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: system-ui, -apple-system, sans-serif;
+      color: #fff;
+      padding: 24px;
+    }
+    .card {
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      border: 1px solid #E91E8C44;
+      border-radius: 24px;
+      padding: 36px 28px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 0 60px #E91E8C22;
+    }
+    img { width: 90px; height: 90px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 0 30px #E91E8C66; }
+    h1 { font-size: 22px; font-weight: 900; margin-bottom: 8px; }
+    p  { font-size: 14px; color: #aaa; line-height: 1.6; margin-bottom: 28px; }
+    .steps { text-align: right; margin-bottom: 28px; display: flex; flex-direction: column; gap: 10px; }
+    .step  { background: #ffffff0d; border-radius: 12px; padding: 12px 16px; font-size: 13px; color: #ddd; border: 1px solid #ffffff11; }
+    .step strong { color: #E91E8C; display: block; margin-bottom: 4px; font-size: 14px; }
+    .btn {
+      display: block; width: 100%;
+      background: linear-gradient(135deg, #cc0000, #E91E8C);
+      color: #fff; border: none; border-radius: 16px;
+      padding: 16px; font-size: 16px; font-weight: 700;
+      cursor: pointer; margin-bottom: 12px;
+      box-shadow: 0 4px 20px #E91E8C55;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn:active { transform: scale(0.97); box-shadow: 0 2px 10px #E91E8C44; }
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid #E91E8C66;
+      color: #E91E8C;
+      box-shadow: none;
+    }
+    #status { font-size: 13px; color: #4CAF50; min-height: 20px; margin-top: 8px; }
+    #status.error { color: #F44336; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <img src="/logo.png" alt="هوا شات" onerror="this.style.display='none'" />
+    <h1>إصلاح هوا شات</h1>
+    <p>إذا ظهر لك "Unavailable" أو الموقع لا يفتح، اضغط الزر أدناه لمسح الكاش القديم وفتح التطبيق مجدداً.</p>
+
+    <div class="steps">
+      <div class="step"><strong>الخطوة 1 — مسح تلقائي</strong>يمسح جميع ملفات الكاش والـ Service Worker القديمة</div>
+      <div class="step"><strong>الخطوة 2 — إعادة تحميل</strong>يفتح الموقع من جديد نظيفاً بدون أي ملفات قديمة</div>
+    </div>
+
+    <button class="btn" onclick="doFix()">🔄 إصلاح وفتح التطبيق</button>
+    <button class="btn btn-secondary" onclick="window.location='/'">↩ الذهاب مباشرة للموقع</button>
+    <div id="status"></div>
+  </div>
+
+  <script>
+    async function doFix() {
+      var btn = document.querySelector('.btn');
+      var status = document.getElementById('status');
+      btn.disabled = true;
+      btn.textContent = '⏳ جارٍ الإصلاح...';
+      status.textContent = '';
+      status.className = '';
+
+      try {
+        // 1. إيقاف كل Service Workers
+        if ('serviceWorker' in navigator) {
+          var regs = await navigator.serviceWorker.getRegistrations();
+          for (var r of regs) { await r.unregister(); }
+        }
+        // 2. مسح كل الكاش
+        if ('caches' in window) {
+          var names = await caches.keys();
+          await Promise.all(names.map(function(n) { return caches.delete(n); }));
+        }
+        // 3. مسح localStorage مؤقتاً (الكاش فقط، لا البيانات)
+        try { sessionStorage.clear(); } catch(e){}
+
+        status.textContent = '✅ تم الإصلاح! جارٍ فتح التطبيق...';
+        status.className = '';
+
+        setTimeout(function() {
+          // hard reload مع bypass cache
+          window.location.replace('/?v=' + Date.now());
+        }, 1200);
+      } catch(e) {
+        status.textContent = '⚠️ حدث خطأ، جرّب فتح الموقع مباشرة.';
+        status.className = 'error';
+        btn.disabled = false;
+        btn.textContent = '🔄 إصلاح وفتح التطبيق';
+      }
+    }
+  </script>
+</body>
+</html>
